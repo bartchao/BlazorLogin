@@ -1,0 +1,49 @@
+﻿@using BlazorLogin.Shared.NavMenu
+@using System.Security.Claims;
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager navigationManager
+@inject AuthService AuthService
+@inject SessionStateProvider SessionState
+@inject ITranslator Translator
+@inherits LayoutComponentBase
+<AuthorizeView>
+    <NavBar></NavBar>
+    @Body
+</AuthorizeView>
+
+
+
+@code
+{
+    protected override async Task<Task> OnInitializedAsync()
+    {
+        var state = await authenticationStateProvider.GetAuthenticationStateAsync();
+        if (!state.User.Identity.IsAuthenticated)
+        {
+            navigationManager.NavigateTo("/Login", true);
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(SessionState.Company))
+            {
+                navigationManager.NavigateTo("/SetLocale", false);
+            }
+            else
+            {
+                Translator.SetLocale(SessionState.Company, SessionState.Locale);
+                navigationManager.NavigateTo("/Index", false);
+            }
+        }
+        return base.OnInitializedAsync();
+    }
+
+}
+
+
+
+
+
+
+
+
+

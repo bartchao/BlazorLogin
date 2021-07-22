@@ -1,0 +1,29 @@
+﻿@page "/"
+@inject NavigationManager navigationManager
+@inject SessionStateProvider SessionState
+@code {
+
+    private bool showNotAuthorizedMessage = false;
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private bool ShowCompanyDialog { get; set; } = false;
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateTask;
+        if (authenticationState?.User?.Identity is null || !authenticationState.User.Identity.IsAuthenticated)
+        {
+            navigationManager.NavigateTo("/Login", false);
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(SessionState.Company))
+            {
+                navigationManager.NavigateTo("/SetLocale", false);
+            }
+            else
+            {
+                navigationManager.NavigateTo("/Index", false);
+            }
+        }
+    }
+}

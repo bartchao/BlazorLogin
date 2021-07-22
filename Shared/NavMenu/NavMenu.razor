@@ -1,0 +1,35 @@
+﻿@using BlazorLogin.Service
+@inject NavMenuBuilder  NavMenuBuilder
+@inject ITranslator Translator
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav me-auto">
+        @if (menuTree != null)
+        {
+            foreach (var node in menuTree.Child)
+            {
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @Translator.Get(node.Name)
+                </a>
+                <NavBarMenu MenuItem="@node.Child" BaseURL="@node.Name"/>
+            </li>
+            }
+        }
+
+    </ul>
+
+</div>
+@code {
+
+
+    MenuTree menuTree;
+    protected override Task OnInitializedAsync()
+    {
+        menuTree = NavMenuBuilder.GetNavLinks();
+        return Task.CompletedTask;
+    }
+
+
+
+
+}

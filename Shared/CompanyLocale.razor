@@ -1,0 +1,141 @@
+﻿@page "/SetLocale"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims;
+@layout LoginLayout
+
+@inject SessionStateProvider SessionState
+@inject AuthService AuthService
+@inject AuthenticationStateProvider provider
+@inject NavigationManager NavigationManager
+@inject ITranslator Translator
+<!-- Form -->
+<h2>Select Company and Language</h2>
+@if (CompanyLocales != null)
+{
+    <p>@Message</p>
+    <form method="post">
+        <div class="mb-3">
+            <label for="company" class="form-label">Company</label>
+            <select @onchange="CompanyChanged" class="form-control" name="Company">
+                <option>@NoSelect</option>
+                @foreach (var company in CompanyLocales.Keys)
+                {
+                    <option value="@company">@company</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="locale" class="form-label">Language</label>
+            <select @onchange="LocaleChanged" class="form-control" name="Locale">
+                <option>@NoSelect</option>
+
+                @if (CompanyLocales.TryGetValue(SelectedCompany, out LocalesList))
+                {
+                    @foreach (var s in LocalesList)
+                    {
+                        <option value="@s">@s</option>
+                    }
+                }
+            </select>
+        </div>
+
+    </form>
+    <div class="dropdown-divider"></div>
+    <div class="d-grid">
+        @if (CanSubmit)
+        {
+            <button @onclick="Submit" class="btn btn-primary">Proceed</button>
+        }else
+        {
+            <button class="btn btn-primary disabled">Proceed</button>
+        }
+        
+
+
+    </div>
+
+}
+else
+{
+    <h2>Error!</h2>
+}
+
+
+
+
+
+
+
+
+
+@code {
+    [Parameter] public string SelectedCompany { get; set; } = "";
+    [Parameter] public string SelectedLocale { get; set; } = "";
+    [Parameter] public string Message { get; set; }
+    public List<string> LocalesList;
+    public bool CanSubmit { get; set; } = false;
+    private readonly string NoSelect = "Please Select";
+    private void CompanyChanged(ChangeEventArgs args)
+    {
+        SelectedCompany = args.Value.ToString();
+        SelectedLocale = NoSelect;
+        OnChange();
+    }
+    private void LocaleChanged(ChangeEventArgs args)
+    {
+        SelectedLocale = args.Value.ToString();
+        OnChange();
+    }
+
+    private void OnChange()
+    {
+        if (SelectedCompany != NoSelect && SelectedLocale != NoSelect)
+        {
+            CanSubmit = true;
+        }
+        else
+        {
+            CanSubmit = false;
+        }
+        StateHasChanged();
+    }
+    public void Submit()
+    {
+        SessionState.Company = SelectedCompany;
+        var Locale = (ITranslator.eLocale)Enum.Parse(typeof(ITranslator.eLocale), SelectedLocale.Replace("-", "_"));
+        SessionState.Locale = Locale;
+        //SessionState.Times++;
+        Console.WriteLine("CompanyLocale" + SessionState.Times);
+        //Translator.SetLocale(SelectedCompany, Locale);
+        NavigationManager.NavigateTo("/Index", false);
+
+    }
+
+
+    private Dictionary<string, List<string>> _CompanyLocales;
+    [Parameter]
+    public Dictionary<string, List<string>> CompanyLocales
+    {
+        get
+        {
+            return _CompanyLocales;
+        }
+        set
+        {
+            _CompanyLocales = value;
+            StateHasChanged();
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await provider.GetAuthenticationStateAsync();
+        var claims = state.User.Claims.ToList();
+        var useridclaim = claims.FirstOrDefault(x => x.Type == ClaimTypes.Sid);
+        if (useridclaim != null)
+        {
+            CompanyLocales = AuthService.GetCompanyLocales(useridclaim.Value);
+        }
+
+
+    }
+}

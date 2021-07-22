@@ -1,0 +1,15 @@
+﻿@using BlazorLogin.Service
+@inject ITranslator Translator
+<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+    @foreach(var item in MenuItem)
+    {
+        <a class="dropdown-item" href="@BaseURL/@item.Name">@Translator.Get(item.Name)</a>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<MenuTree> MenuItem { get; set; }
+    [Parameter]
+    public string BaseURL { get; set; }
+}
