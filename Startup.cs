@@ -37,7 +37,11 @@ namespace BlazorLogin
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddDbContext<TEMPLATE20Context>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("LocalDb")));
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("LocalDB"));
+                options.EnableSensitiveDataLogging();
+            });
+            
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
@@ -47,8 +51,10 @@ namespace BlazorLogin
             });
             services.AddScoped<AuthService>();
             services.AddScoped<NavMenuBuilder>();
+            services.AddScoped<IDataServiceFactory,DataServiceFactory>();
             services.AddScoped<SessionStateProvider>();
             services.AddScoped<ITranslator,Translator>();
+            services.AddTelerikBlazor();
         }
     
 

@@ -7,8 +7,11 @@
 @inject ITranslator Translator
 @inherits LayoutComponentBase
 <AuthorizeView>
-    <NavBar></NavBar>
-    @Body
+    <TelerikRootComponent>
+        <NavBar></NavBar>
+        @Body
+    </TelerikRootComponent>
+
 </AuthorizeView>
 
 

@@ -1,0 +1,28 @@
+﻿@page "/Index"
+@using BlazorLogin.Service
+@using BlazorLogin.Models
+@using BlazorLogin.Shared
+
+<div clsaa="container px-2">
+    <TelerikTabStrip TabPosition="Telerik.Blazor.TabPosition.Top" @ref="myTabStrip">
+        <TabStripTab Title="User">
+            <TableGrid TItem="User"/>
+        </TabStripTab>
+        <TabStripTab Title="UserGroup">
+            <TableGrid TItem="UserGroup" />
+        </TabStripTab>
+        <TabStripTab Title="UserGroupFunction">
+            <TableGrid TItem="UserGroupFunction" />
+        </TabStripTab>
+        <TabStripTab Title="UserUserGroup">
+            <TableGrid TItem="UserUserGroup" />
+        </TabStripTab>
+    </TelerikTabStrip>
+
+
+</div>
+@code{
+    Telerik.Blazor.Components.TelerikTabStrip myTabStrip;
+
+
+}
