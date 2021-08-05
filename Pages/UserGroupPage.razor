@@ -1,0 +1,117 @@
+﻿
+@using BlazorLogin.Service
+@using BlazorLogin.Models
+@typeparam TItem
+@inject IDataServiceFactory ServiceFactory
+<TelerikGrid Data="@Data" FilterMode="@GridFilterMode.FilterMenu" AutoGenerateColumns="false"
+             Sortable="true" Pageable="true" PageSize="20" Groupable="true" Resizable="true" Reorderable="true"
+             OnUpdate="@UpdateHandler" OnDelete="@DeleteHandler" OnCreate="@CreateHandler" EditMode="@GridEditMode.Inline">
+    <GridColumns>
+        <GridColumn Field="@nameof(UserGroup.UserGroupId)" Editable="false" />
+        <GridColumn Field="@nameof(UserGroup.UserGroupNo)"></GridColumn>
+        <GridColumn Field="@nameof(UserGroup.Description)"></GridColumn>
+        <GridColumn Field="@nameof(UserGroup.SecurityGroupId)"></GridColumn>
+        <GridColumn Field="@nameof(UserGroup.ModifiedBy)"></GridColumn>
+        <GridColumn Field="@nameof(UserGroup.ModifiedTime)"></GridColumn>
+        <GridColumn Field="@nameof(UserGroup.SysState)"></GridColumn>
+        <GridColumn Field="@nameof(UserGroup.TransactionId)"></GridColumn>
+        <GridColumn Field="@nameof(UserGroup.CompanyId)">
+
+            <EditorTemplate>
+                @{ 
+                    <TelerikDropDownList Data="@Companies"
+                                         @bind-Value="@CurrentlyInEdit.CompanyId" 
+                                         TextField="@nameof(Company.CompanyNo)" ValueField="@nameof(Company.CompanyId)"
+                                         Width="100%" PopupHeight="auto">
+                    </TelerikDropDownList>
+                }
+            </EditorTemplate>
+            <Template>
+                @{
+                    // a Template is used to show the foreign key data that is user-friendly
+                    long companyId = (context as UserGroup).CompanyId;
+                    Company matchingPos = Companies.FirstOrDefault(r => r.CompanyId == companyId);
+                    string textToRender = matchingPos != null ? matchingPos.CompanyNo : "Unknown";
+                    <text>@textToRender</text>
+                }
+            </Template>
+        </GridColumn>
+
+
+
+
+        <GridCommandColumn Width="200px" Resizable="false">
+            <GridCommandButton Command="Save" Icon="save" ShowInEdit="true">Update</GridCommandButton>
+            <GridCommandButton Command="Edit" Icon="edit" Primary="true">Edit</GridCommandButton>
+            <GridCommandButton Command="Delete" Icon="delete">Delete</GridCommandButton>
+            <GridCommandButton Command="Cancel" Icon="cancel" ShowInEdit="true">Cancel</GridCommandButton>
+        </GridCommandColumn>
+    </GridColumns>
+    <GridToolBar>
+        <GridCommandButton Command="Add" Icon="plus" Primary="true">Add Forecast</GridCommandButton>
+    </GridToolBar>
+</TelerikGrid>
+@code
+{
+    public List<UserGroup> Data { get; set; }
+    public List<Company> Companies { get; set; }
+    DataService<UserGroup> UserGroupService { get; set; }
+    DataService<Company> CompanyService { get; set; }
+
+    public UserGroup CurrentlyInEdit { get; set; } = new UserGroup();
+    protected override Task OnInitializedAsync()
+    {
+        UserGroupService = ServiceFactory.Get<UserGroup>();
+        CompanyService = ServiceFactory.Get<Company>();
+        Data = UserGroupService.GetAll().ToList();
+        Companies = CompanyService.GetAll().ToList();
+        return base.OnInitializedAsync();
+    }
+    public async Task DeleteHandler(GridCommandEventArgs args)
+    {
+        UserGroup currItem = (UserGroup)args.Item;
+        try
+        {
+            UserGroupService.Delete(currItem);
+            Data = UserGroupService.GetAll().ToList();
+        }
+        catch (Exception ex)
+        {
+            //await ShowAlert(ex.Message);
+        }
+    }
+
+    public async Task CreateHandler(GridCommandEventArgs args)
+    {
+        UserGroup currItem = (UserGroup)args.Item;
+
+        try
+        {
+            UserGroupService.Insert(currItem);
+            Data = UserGroupService.GetAll().ToList();
+
+        }
+        catch (Exception ex)
+        {
+            //await ShowAlert(ex.Message);
+        }
+
+    }
+
+    public async Task UpdateHandler(GridCommandEventArgs args)
+    {
+        UserGroup currItem = (UserGroup)args.Item;
+
+        try
+        {
+            UserGroupService.Update(currItem);
+            Data = UserGroupService.GetAll().ToList();
+
+        }
+        catch (Exception ex)
+        {
+            //await ShowAlert(ex.Message);
+        }
+    }
+    
+}

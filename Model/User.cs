@@ -37,38 +37,5 @@ namespace BlazorLogin.Models
         public virtual ICollection<Employee> Employee { get; set; }
         public virtual ICollection<UserUserGroup> UserUserGroup { get; set; }
     }
-    public class UserDataSerive:IDataService<User>
-    {
-        private readonly TEMPLATE20Context context;
-
-        public void Delete(User Entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IQueryable<User> GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Insert(User Entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public User Read(Expression<Func<User, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SaveChanges()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(User Entity)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    
 }

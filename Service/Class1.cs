@@ -1,4 +1,6 @@
 ﻿using BlazorLogin.Data;
+using BlazorLogin.Shared;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +10,17 @@ using System.Threading.Tasks;
 
 namespace BlazorLogin.Service
 {
-    interface IDataServiceFactory
+    public class ForeignKeyModel
     {
-        DataService<T> Get<T>() where T : class;
+        public long Id { get; set; }
+        public string Text { get; set; }
+    }
+    public interface IDataServiceFactory
+    {
+        public DataService<T> Get<T>() where T : class;
     }
 
-    class DataServiceFactory : IDataServiceFactory
+    public class DataServiceFactory : IDataServiceFactory
     {
         private readonly TEMPLATE20Context _context;
         public DataServiceFactory(TEMPLATE20Context context)
@@ -26,7 +33,7 @@ namespace BlazorLogin.Service
             return new DataService<T>(_context);
         }
     }
-    interface IDataService<T>
+    public interface IDataService<T>
     {
         void Insert(T Entity);
         void Delete(T Entity);
@@ -34,6 +41,7 @@ namespace BlazorLogin.Service
         T Read(Expression<Func<T, bool>> predicate);
         void Update(T Entity);
         void SaveChanges();
+        IList<ForeignKeyModel> GetForeignKeys();
     }
     public class DataService<T>: IDataService<T> where T:class
     {
@@ -53,7 +61,8 @@ namespace BlazorLogin.Service
 
         public IQueryable<T> GetAll()
         {
-            return _context.Set<T>().AsQueryable<T>();
+            var set = _context.Set<T>();
+            return set.AsQueryable().AsNoTracking();
         }
 
 
@@ -70,7 +79,8 @@ namespace BlazorLogin.Service
 
         public void SaveChanges()
         {
-            _context.SaveChanges();
+            Console.WriteLine(_context.SaveChanges());
+            //_context.SaveChanges();
         }
 
         public void Update(T Entity)
@@ -87,7 +97,16 @@ namespace BlazorLogin.Service
                 var set = propInfo.GetValue(Entity);
                 propInfo.SetValue(obj, set, null);
             }
-            SaveChanges();
+            try
+            {
+                //_context.Set<T>().Update(Entity);
+                SaveChanges();
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+            }
+            
         }
         public T FindByID(T Entity)
         {
@@ -97,5 +116,21 @@ namespace BlazorLogin.Service
             return obj;
         }
 
+        public IList<ForeignKeyModel> GetForeignKeys()
+        {
+            var list = new List<ForeignKeyModel>();
+            var data = this.GetAll();
+            var classname = typeof(T).Name;
+            foreach (var item in data)
+            {
+                var model = new ForeignKeyModel
+                {
+                    Id = (long)typeof(T).GetProperty(classname + "Id").GetValue(item),
+                    Text = (string)typeof(T).GetProperty(classname + "No").GetValue(item)
+                };
+                list.Add(model);
+            }
+            return list;
+        }
     }
 }
