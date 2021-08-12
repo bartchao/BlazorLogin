@@ -2,49 +2,85 @@
 using BlazorLogin.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace BlazorLogin.Service
 {
-    public class FunctionService
+    public class PropertyList<TItem> where TItem : class
     {
-        private readonly TEMPLATE20Context _context;
-        public FunctionService(TEMPLATE20Context context)
+        public override bool Equals(object obj)
         {
-            _context = context;
+            return base.Equals(obj);
         }
-        public List<Function> Get()
+
+        public List<GridViewModel<TItem>> GetColumn()
         {
-            var list = _context.Function.AsNoTracking().ToList();
-            return list;
+            var list = typeof(TItem).GetProperties().Where(p => p.GetMethod.IsVirtual == false && p.GetType().IsInterface == false).ToList();
+            var ignore = typeof(TItem).GetProperty("SysState");
+            var ignore1 = typeof(TItem).GetProperty("SecurityGroupId");
+            var ignore2 = typeof(TItem).GetProperty("TransactionId");
+            var ignorePK = typeof(TItem).GetProperty(typeof(TItem).Name + "Id");
+            list.Remove(ignore);
+            list.Remove(ignore1);
+            list.Remove(ignore2);
+            list.Remove(ignorePK);
+            var returnList = new List<GridViewModel<TItem>>();
+            foreach (var item in list)
+            {
+                var model = new GridViewModel<TItem>
+                {
+                    Column = item
+                };
+                if (IsNullable(item.DeclaringType) == false)
+                    model.AllowNull = false;
+                if (item.Name.EndsWith("Id"))
+                {
+                    //Has ForeignKey
+                    var fkcolumn = GetFKColumn(item.Name);
+                    if (fkcolumn != null)
+                        model.ForeignKey = fkcolumn;
+                }
+                returnList.Add(model);
+            }
+
+            return returnList;
         }
-        public void Delete(Function function)
+
+        public override int GetHashCode()
         {
-            var original = _context.Function.FirstOrDefault(x => x.FunctionId == function.FunctionId);
-            _context.Function.Remove(original);
-            SaveChanges();
+            return base.GetHashCode();
         }
-        public void Update(Function function)
+
+        public override string ToString()
         {
-            var original = _context.Function.FirstOrDefault(x => x.FunctionId == function.FunctionId);
-            original.FunctionNo = function.FunctionNo;
-            original.Description = function.Description;
-            original.SecurityGroupId = function.SecurityGroupId;
-            original.SysState = function.SysState;
-                
-            _context.Function.Update(original);
-            SaveChanges();
+            return base.ToString();
         }
-        public void Insert(Function function)
+
+        private PropertyInfo GetFKColumn(string column)
         {
-            _context.Function.Add(function);
-            SaveChanges();
+            string search = column.Substring(0, column.Length - 2);
+            var fkcolumn = typeof(TItem).GetProperties().Where(p => p.GetMethod.IsVirtual == true && p.PropertyType.IsGenericType == false).Where(x => x.Name == search).First();
+
+            return fkcolumn;
         }
-        public void SaveChanges()
-        {
-            _context.SaveChanges();
-        }
+        bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
+        
     }
+    public class GridViewModel<T> where T : class
+    {
+        public PropertyInfo Column { get; set; }
+        public bool Viewable { get; set; } = true;
+        public bool EditableOnUpdate { get; set; } = true;
+        public bool ViewableOnUpdate { get; set; } = true;
+        public bool ViewableOnCreate { get; set; } = true;
+        public bool EditableOnCreate { get; set; } = true;
+
+        public bool AllowNull { get; set; } = true;
+        public PropertyInfo? ForeignKey { get; set; }
+    }
+
 }

@@ -1,5 +1,6 @@
 ﻿@using BlazorLogin.Shared.NavMenu
 @using System.Security.Claims;
+@using BlazorLogin.Service
 @inject AuthenticationStateProvider authenticationStateProvider
 @inject NavigationManager navigationManager
 @inject AuthService AuthService
@@ -8,17 +9,28 @@
 @inherits LayoutComponentBase
 <AuthorizeView>
     <TelerikRootComponent>
-        <NavBar></NavBar>
-        @Body
+        <CascadingValue IsFixed="true" Value="@Notification">
+            <NavBar></NavBar>
+            <div class="container-fluid">
+                @Body
+            </div>
+        </CascadingValue>
     </TelerikRootComponent>
 
 </AuthorizeView>
+<TelerikNotification @ref="@Notification.Instance"
+                     HorizontalPosition="@NotificationHorizontalPosition.Right"
+                     VerticalPosition="@NotificationVerticalPosition.Top">
+</TelerikNotification>
 
 
 
 @code
 {
-    protected override async Task<Task> OnInitializedAsync()
+    Notification Notification { get; set; } = new Notification();
+
+    protected override async Task<Task>
+    OnInitializedAsync()
     {
         var state = await authenticationStateProvider.GetAuthenticationStateAsync();
         if (!state.User.Identity.IsAuthenticated)
@@ -42,7 +54,16 @@
 
 }
 
+<style>
+    .big-notification .k-notification-container .k-notification-wrap {
+        width: 350px;
+        height: 100px;
+    }
 
+    .big-notification {
+        z-index: 1234;
+    }
+</style>
 
 
 

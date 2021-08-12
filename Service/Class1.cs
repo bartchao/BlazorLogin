@@ -68,6 +68,8 @@ namespace BlazorLogin.Service
 
         public void Insert(T Entity)
         {
+            //typeof(T).GetProperty("SysState").SetValue(Entity, "C");
+            //typeof(T).GetProperty("SecurityGroupId").SetValue(Entity, 0);
             _context.Set<T>().Add(Entity);
             SaveChanges();
         }

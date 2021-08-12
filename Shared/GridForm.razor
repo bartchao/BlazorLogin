@@ -1,0 +1,105 @@
+﻿@using BlazorLogin.Service
+@using BlazorLogin.Models
+@using System.Reflection
+@using System
+@using Telerik.DataSource
+@typeparam TItem
+@inject IDataServiceFactory ServiceFactory
+@inject ITranslator Translator
+<TelerikForm Model="_Item" Columns="2" ColumnSpacing="25px" OnSubmit="OnSubmitHandler">
+    <FormItems>
+        @{
+            foreach (var column in Columns)
+            {
+                if (column.ViewableOnUpdate)
+                {
+                    if (column.ForeignKey == null)
+                    {
+                        string required = column.AllowNull ? "" : "required";
+                        <FormItem Field="@column.Column.Name" LabelText="@Translator.Get(@column.Column.Name)" Enabled="@column.EditableOnUpdate" />
+                    }
+                    else
+                    {
+                        List<ForeignKeyModel> list = null;
+                        if (list == null)
+                        {
+                            MethodInfo method1 = typeof(IDataServiceFactory).GetMethod(nameof(IDataServiceFactory.Get));
+                            MethodInfo generic1 = method1.MakeGenericMethod(column.ForeignKey.PropertyType);
+                            var dataservice = generic1.Invoke(ServiceFactory, null);
+                            MethodInfo generic2 = dataservice.GetType().GetMethod("GetForeignKeys");
+                            list = (List<ForeignKeyModel>)generic2.Invoke(dataservice, null);
+                        }
+                        string required = column.AllowNull ? "" : "required";
+                        <FormItem Field="@column.Column.Name"  Enabled="@column.EditableOnUpdate">
+                            <Template>
+                                <label for="@column.Column.Name">@Translator.Get(column.ForeignKey.Name)</label>
+                                <TelerikDropDownList Data="list" @bind-Value="@PropertyVars[column.ForeignKey.Name].Value"
+                                                     TextField="@nameof(ForeignKeyModel.Text)"
+                                                     ValueField="@nameof(ForeignKeyModel.Id)"
+                                                     Width="100%" PopupHeight="200px" ItemHeight="30" PageSize="20" Filterable="true" ScrollMode="DropDownScrollMode.Scrollable">
+                                </TelerikDropDownList>
+                            </Template>
+                        </FormItem>
+                    }
+                }
+                //PropertyInfo fkcolumn = FKColumns.Find(x => x.Name + "Id" == column.Name);
+
+
+            }
+        }
+    </FormItems>
+    <FormButtons>
+        <TelerikButton ButtonType="@ButtonType.Submit" Primary="true">@Translator.Get("Save")</TelerikButton>
+        <TelerikButton ButtonType="@ButtonType.Button" Primary="true" OnClick="OnCancelHandler">@Translator.Get("Cancel")</TelerikButton>
+
+        @*<TelerikButton ButtonType="ButtonType.Reset">Clear</TelerikButton>*@
+    </FormButtons>
+
+</TelerikForm>
+
+
+@code {
+    [Parameter]
+    public TItem Item { get; set; }
+    private TItem _Item { get; set; }
+    [Parameter]
+    public EventCallback<TItem> ReturnItem { get; set; }
+    [Parameter]
+    public List<GridViewModel<TItem>> Columns { get; set; }
+    [Parameter]
+    public List<PropertyInfo> FKColumns { get; set; }
+
+    public Dictionary<string, FormModel> PropertyVars { get; set; } = new Dictionary<string, FormModel>();
+
+
+    protected override Task OnInitializedAsync()
+    {
+        _Item = (TItem)Utilty.CloneObject((object)Item);
+
+        PropertyVars = new Dictionary<string, FormModel>();
+
+
+        foreach (var key in FKColumns)
+        {
+            long id = (long)(typeof(TItem).GetProperty(key.Name + "Id").GetValue(_Item));
+            var propertyInfo = typeof(TItem).GetProperty(key.Name);
+            PropertyVars.Add(key.Name, new FormModel { Value = id });
+        }
+        return base.OnInitializedAsync();
+    }
+
+
+    private async Task OnSubmitHandler()
+    {
+        foreach (var item in PropertyVars)
+        {
+            _Item.GetType().GetProperty(item.Key + "Id").SetValue(_Item, item.Value.Value);
+        }
+        await ReturnItem.InvokeAsync(_Item);
+    }
+    private async Task OnCancelHandler()
+    {
+        await ReturnItem.InvokeAsync(null);
+    }
+
+}
