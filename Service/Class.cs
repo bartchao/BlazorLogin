@@ -63,7 +63,7 @@ namespace BlazorLogin.Service
         private PropertyInfo GetFKColumn(string column)
         {
             string search = column.Substring(0, column.Length - 2);
-            var fkcolumn = typeof(TItem).GetProperties().Where(p => p.GetMethod.IsVirtual == true && p.PropertyType.IsGenericType == false).Where(x => x.Name == search).First();
+            var fkcolumn = typeof(TItem).GetProperties().Where(p => p.GetMethod.IsVirtual == true && p.PropertyType.IsGenericType == false).Where(x => x.Name == search).FirstOrDefault();
 
             return fkcolumn;
         }

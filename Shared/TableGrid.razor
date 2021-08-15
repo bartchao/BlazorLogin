@@ -3,13 +3,15 @@
 @using System.Reflection
 @using System
 @using Telerik.DataSource
+@using Telerik.Blazor.Services;
 @typeparam TItem
 @inject IDataServiceFactory ServiceFactory
 @inject ITranslator Translator
 
 <TelerikGrid Data="@Data" FilterMode="@GridFilterMode.FilterRow" AutoGenerateColumns="false"
-             Sortable="true" Pageable="true" PageSize="100" Resizable="true" Reorderable="true" RowHeight="20" ScrollMode="GridScrollMode.Scrollable" Height="700px"
+             Sortable="true" Pageable="true" PageSize="100" Resizable="true" Reorderable="true" RowHeight="20" ScrollMode="GridScrollMode.Scrollable" Height="600px"
              OnDelete="@DeleteHandler">
+
     <GridColumns>
         @{
 
@@ -20,7 +22,7 @@
                     //PropertyInfo fkcolumn = FKColumns.Find(x => x.Name + "Id" == column.Name);
                     if (column.ForeignKey == null)
                     {
-                        <GridColumn Field="@column.Column.Name" Title="@Translator.Get(@column.Column.Name)" />
+                        <GridColumn Field="@column.Column.Name" Title="@Translator.Get(@column.Column.Name)" Width="200px" />
                     }
                     else
                     {
@@ -34,10 +36,10 @@
                             list = (List<ForeignKeyModel>)generic2.Invoke(dataservice, null);
                         }
 
-                        <GridColumn Field="@column.Column.Name" Title="@Translator.Get(column.ForeignKey.Name)">
+                        <GridColumn Field="@column.Column.Name" Title="@Translator.Get(column.ForeignKey.Name)" Width="200px">
                             <FilterCellTemplate>
                                 <TelerikMultiSelect Data="@list" Placeholder="" Class="no-x-button" ValueChanged="((List<long> list) => ForeignKeyFliter(list, column.Column.Name, context))"
-                                                    TextField="@nameof(ForeignKeyModel.Text)" ValueField="@nameof(ForeignKeyModel.Id)" AutoClose="false">
+                                                    TextField="@nameof(ForeignKeyModel.Text)" ValueField="@nameof(ForeignKeyModel.Id)" AutoClose="false" Filterable="true">
                                 </TelerikMultiSelect>
                             </FilterCellTemplate>
                             <Template>
@@ -58,6 +60,7 @@
 
                                 }
                             </Template>
+
                         </GridColumn>
                     }
 
@@ -65,13 +68,14 @@
             }
         }
 
-        <GridCommandColumn Width="200px" Resizable="false">
+        <GridCommandColumn Width="180px" Resizable="false" Locked="true">
 
             <GridCommandButton Icon="edit" Primary="true" OnClick="EditOnClick">@Translator.Get("Edit")</GridCommandButton>
             <GridCommandButton Command="Delete" Icon="delete">@Translator.Get("Delete")</GridCommandButton>
 
         </GridCommandColumn>
     </GridColumns>
+
     <GridToolBar>
         @*@<GridCommandButton Icon="plus" Primary="true" OnClick="AddOnClick">@Translator.Get("Add")</GridCommandButton>*@
         <GridCommandButton Icon="plus" Primary="true" OnClick="AddOnClick">@Translator.Get("Add")</GridCommandButton>
@@ -80,9 +84,11 @@
         <span class="k-toolbar-spacer"></span> @* add this spacer to keep the searchbox on the right *@
         <GridSearchBox />
     </GridToolBar>
+
     <GridExport>
         <GridExcelExport FileName="telerik-grid-export" AllPages="true" />
     </GridExport>
+
 </TelerikGrid>
 
 @{

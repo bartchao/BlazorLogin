@@ -74,7 +74,7 @@
 
     protected override Task OnInitializedAsync()
     {
-        _Item = (TItem)Utilty.CloneObject((object)Item);
+        _Item = CloneObject(Item);
 
         PropertyVars = new Dictionary<string, FormModel>();
 

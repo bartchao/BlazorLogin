@@ -39,8 +39,8 @@ namespace BlazorLogin
             services.AddServerSideBlazor();
             services.AddDbContext<TEMPLATE20Context>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("EDUDB"));
-                //options.UseSqlServer(Configuration.GetConnectionString("LocalDB"));
+                //options.UseSqlServer(Configuration.GetConnectionString("EDUDB"));
+                options.UseSqlServer(Configuration.GetConnectionString("LocalDB"));
                 options.EnableSensitiveDataLogging();
             });
             

@@ -1,5 +1,6 @@
 ﻿@using System.Security.Claims;
 @inherits LayoutComponentBase
+@inject SessionStateProvider SessionState
 <nav class="navbar navbar-expand-lg navbar-default">
     <div class="container-fluid px-0">
         <a class="navbar-brand" href="/Index">
@@ -11,7 +12,8 @@
         </button>
         <NavMenu />
         <div class="dropdown ms-2">
-            <a class="nav-item me-auto dropdown float-end text-dark" href="">Welcome! @Username</a>
+            <a class="nav-item me-auto dropdown float-end text-dark">
+                <i class="fe fe-user me-2"></i>@Username | <i class="fe fe-briefcase me-2"></i>@Company</a>
             <div class="dropdown-menu dropdown-menu-end shadow">
                 <ul class="list-unstyled">
                     <li>
@@ -38,10 +40,12 @@
     [CascadingParameter]
     private Task<AuthenticationState> authState { get; set; }
     public string Username { get; set; }
+    public string Company { get; set; }
     protected override Task OnInitializedAsync()
     {
         var claims = authState.Result.User.Claims.ToList();
         Username = claims.Find(x => x.Type == ClaimTypes.Name).Value;
+        Company = SessionState.Company;
         return base.OnInitializedAsync();
     }
 

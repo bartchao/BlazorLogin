@@ -38,7 +38,7 @@
     <link href="BlazorLogin.styles.css" rel="stylesheet" />
 </head>
 <body>
-    <component type="typeof(App)" render-mode="ServerPrerendered" param-InitialState="tokens"/>
+    <component type="typeof(App)" render-mode="ServerPrerendered" param-InitialState="tokens" />
 
     @*<div id="blazor-error-ui">
             <environment include="Staging,Production">
@@ -90,12 +90,19 @@
 
     <!-- Theme JS -->
     <script src="./assets/js/theme.min.js"></script>
+    <style>
+        import url(//fonts.googleapis.com/earlyaccess/notosanstc.css);
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+    </style>
 </body>
 </html>
 
 
 @{
-    
+
 
 
 }
